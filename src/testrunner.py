@@ -31,7 +31,7 @@ if __name__ == "__main__":
             print(f"Total chunks: {len(chunks)}")
             print("\nFirst Chunk Sample:")
             
-            print(docs[0].page_content[:300]) # Prints the first 300 characters
+            print(docs[0].page_content[:300])
             
     #txt test
     test_pdf_path = "data/example.txt"
@@ -46,4 +46,4 @@ if __name__ == "__main__":
             print(f"Total chunks: {len(chunks)}")
             print("\nFirst Chunk Sample:")
             
-            print(docs[0].page_content[:300]) # Prints the first 300 characters
+            print(docs[0].page_content[:300])
