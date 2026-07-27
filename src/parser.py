@@ -1,9 +1,10 @@
 import os
-
 from langchain_community.document_loaders import (
     PyPDFLoader,
     Docx2txtLoader,
-    TextLoader
+    TextLoader,
+    BSHTMLLoader,
+    CSVLoader
     )
 
 def read_file(file_path: str):
@@ -19,6 +20,10 @@ def read_file(file_path: str):
         loader = Docx2txtLoader(file_path)
     elif extension in [".txt", ".md"]:
         loader = TextLoader(file_path, encoding="utf-8")
+    elif extension in [".html",".htm"]:
+        loader = BSHTMLLoader(file_path)
+    elif extension == ".csv":
+            loader = CSVLoader(file_path)
     else:
         raise ValueError(f"Document extension {extension} is not recognized.")
     
