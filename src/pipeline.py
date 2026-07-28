@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate #Prompt container
 from langchain_core.output_parsers import StrOutputParser #Final output in simple string
 from langchain_core.runnables import RunnablePassthrough #Passes user raw input, and keeps it for later context
 
-def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", model_name: str = "llama3.1"):
+def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", model_name: str = "deepseek-r1"):
     print(f"Processing pipeline for: {file_path}")
     
     all_chunks = []
