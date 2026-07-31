@@ -1,5 +1,4 @@
 #pipeline.py
-import os
 from pathlib import Path
 from parser import read_file
 from splitter import split_text
