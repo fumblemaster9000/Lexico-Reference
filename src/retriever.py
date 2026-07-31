@@ -5,22 +5,35 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
+from langchain_core.documents import Document
 
-def retriever(chunks, persist_dir="./chroma_db", k=3):
+def retriever(chunks=None, persist_dir="./chroma_db", k=3):
     #Initialize Chroma Retriever
     
-    #Clear the old database directory if it exists to keep data fresh
-    if os.path.exists(persist_dir):
-        shutil.rmtree(persist_dir)
-        
     embed = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
-    #Set up vector store and retrieval
-    db = Chroma.from_documents(
-        documents = chunks,
-        embedding = embed,
-        persist_directory = persist_dir
-    )
+    if chunks is None:
+        db = Chroma(
+            persist_directory=persist_dir,
+            embedding_function=embed
+        )
+        stored_data = db.get()
+        chunks = [
+            Document(page_content=text, metadata=meta)
+            for text, meta in zip(stored_data["documents"], stored_data["metadatas"])
+        ]
+    else:
+        #Clear the old database directory if it exists to keep data fresh
+        if os.path.exists(persist_dir):
+            shutil.rmtree(persist_dir)
+            
+        #Set up vector store and retrieval
+        db = Chroma.from_documents(
+            documents = chunks,
+            embedding = embed,
+            persist_directory = persist_dir
+        )
+        
     vector = db.as_retriever(search_kwargs={"k": k})
     
     #BM25 set up for keyword matching
@@ -30,7 +43,7 @@ def retriever(chunks, persist_dir="./chroma_db", k=3):
     #Combine both methods 50/50 using rank fusion
     ensemble_retriever = EnsembleRetriever(
         retrievers=[bm25_retriever, vector],
-        weights=[0.5,0.5]
+        weights=[0.5, 0.5]
     )
     
     return ensemble_retriever

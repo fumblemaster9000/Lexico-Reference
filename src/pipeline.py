@@ -1,4 +1,5 @@
 #pipeline.py
+import os
 from pathlib import Path
 from parser import read_file
 from splitter import split_text
@@ -12,26 +13,33 @@ from langchain_core.runnables import RunnablePassthrough #Passes user raw input,
 def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", model_name: str = "deepseek-r1"):
     print(f"Processing pipeline for: {file_path}")
     
+    #Check if the Chroma database already exists
+    db_exists = os.path.exists(persist_dir) and os.listdir(persist_dir)
+    
     all_chunks = []
     data_path = Path(file_path)
     
     if not data_path.exists():
         raise FileNotFoundError(f"File path {file_path} does not exist.")
     
-    for file in data_path.iterdir():
-        if file.is_file() and not file.name.startswith('.'):
-            print(f"Parsing: {file.name}")
-            try:
-                docs = read_file(str(file))
-                chunks = split_text(docs)
-                all_chunks.extend(chunks)
-            except Exception as e:
-                print(f"Skipping {file.name}: {e}")
-                
-    print(f"Total chunks collected: {len(all_chunks)}")
-    
+    if not db_exists:
+        print("Database not found. Parsing and chunking files...")
+        
+        for file in data_path.iterdir():
+            if file.is_file() and not file.name.startswith('.'):
+                print(f"Parsing: {file.name}")
+                try:
+                    docs = read_file(str(file))
+                    chunks = split_text(docs)
+                    all_chunks.extend(chunks)
+                except Exception as e:
+                    print(f"Skipping {file.name}: {e}")
+                    
+        print(f"Total chunks collected: {len(all_chunks)}")
+    else:
+        print("Database already exists, skipping parsing and chunking.")
     #Vector store retriever
-    db_retriever = retriever(all_chunks, persist_dir=persist_dir)
+    db_retriever = retriever(all_chunks if all_chunks else None, persist_dir=persist_dir)
     
     #LLM
     llm = ChatOllama(model=model_name, temperature = 0)
