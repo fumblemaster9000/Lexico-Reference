@@ -6,14 +6,13 @@ from splitter import split_text
 from retriever import retriever
 
 from langchain_ollama import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate #Prompt container
-from langchain_core.output_parsers import StrOutputParser #Final output in simple string
-from langchain_core.runnables import RunnablePassthrough #Passes user raw input, and keeps it for later context
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
 def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", model_name: str = "deepseek-r1"):
     print(f"Processing pipeline for: {file_path}")
     
-    #Check if the Chroma database already exists
     db_exists = os.path.exists(persist_dir) and os.listdir(persist_dir)
     
     all_chunks = []
@@ -38,34 +37,45 @@ def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", mode
         print(f"Total chunks collected: {len(all_chunks)}")
     else:
         print("Database already exists, skipping parsing and chunking.")
-    #Vector store retriever
+
     db_retriever = retriever(all_chunks if all_chunks else None, persist_dir=persist_dir)
     
-    #LLM
-    llm = ChatOllama(model=model_name, temperature = 0)
+    llm = ChatOllama(model=model_name, temperature=0)
     
-    #Cookie Cut Template
-    template = """Answer the question based strictly on the following context:
-    
-    Context:
+    template = """You are an expert research assistant. Answer the user's question accurately using ONLY the provided context blocks below.
+
+    ### Instructions:
+    1. Base your answer strictly on the facts present in the context. Do not extrapolate, assume, or bring in outside knowledge.
+    2. Include an inline citation immediately following every factual statement or claim you make.
+    3. Use the exact filename provided in the context header (e.g., [document.pdf]) for your citations.
+    4. If the context does not contain the answer, state clearly that the information is not available in the provided documents.
+
+    ### Context:
     {context}
-    
-    Question: {question}
-    
-    Answer:"""
+
+    ### Question:
+    {question}
+
+    ### Answer:"""
     
     prompt = ChatPromptTemplate.from_template(template)
     
-    def format_docs(retrieved_docs):
-        return "\n\n".join(doc.page_content for doc in retrieved_docs)
+    def format_docs_with_sources(retrieved_docs):
+        formatted = []
+        for doc in retrieved_docs:
+            source = doc.metadata.get("source", "Unknown Source")
+            # Clean path to just the filename if it's a full path
+            source_name = Path(source).name
+            formatted.append(f"[Source: {source_name}]\n{doc.page_content}")
+        return "\n\n".join(formatted)
     
+    # Use RunnableParallel to pass both the formatted text string to the prompt 
+    # and retain the raw retrieved documents for reference if needed
     rag_chain = (
-        {"context": db_retriever | format_docs, "question" : RunnablePassthrough()}
+        {"context": db_retriever | format_docs_with_sources, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
     
     return rag_chain
-    
-    
