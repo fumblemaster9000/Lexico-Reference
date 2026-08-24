@@ -1,6 +1,6 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-def split_text(documents, chunk_size = 1000, chunk_overlap = 100): #default values
+def split_text(documents, chunk_size = 300, chunk_overlap = 20): #default values, dictionary oriented
     #Takes text and splits it into chunks using langchain recursive character text splitter
     #Optimized for dictionary and lexicon structures, the program prioritizes paragraph and line boundaries
     text_splitter = RecursiveCharacterTextSplitter(
@@ -10,10 +10,10 @@ def split_text(documents, chunk_size = 1000, chunk_overlap = 100): #default valu
             "\n\n\n", #Major Section Breaks
             "\n\n", #Paragraph Boundaries
             "\n", #Line Breaks
-            "", #Word fallback
+            " ", #Word fallback
             "" #Character fallback
             ],
-        keep_separator = True
+        keep_separator = True #preserves the structural format for the LLM to read
         )
     
     chunks = text_splitter.split_documents(documents)

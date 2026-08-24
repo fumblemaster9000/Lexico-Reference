@@ -34,7 +34,7 @@ def read_file(file_path: str):
                 #Compile extracted text into langchain document along with metadata
                 #tracks source file and page index
             documents = ocr_output
-            return documents
+        return documents #unindented to prevent double loading pdf
         
 
     elif extension == ".docx":
