@@ -73,7 +73,7 @@ def rag_pipeline(file_path: str = "data", persist_dir: str = "./chroma_db", mode
     
     prompt = ChatPromptTemplate.from_template(template)
     
-    def format_docs_with_sources(retrieved_docs): #helper function to extract and clean filename
+    def format_docs_with_sources(retrieved_docs): #helper function to clean inline citations
         formatted = [] #list for formatted text string
         for doc in retrieved_docs: #loop through each doc
             source = doc.metadata.get("source", "Unknown Source") #extract 'source' metadata and default to unknown

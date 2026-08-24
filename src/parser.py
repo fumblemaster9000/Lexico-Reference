@@ -51,3 +51,4 @@ def read_file(file_path: str):
     documents = loader.load()
     print(f"Successfully parsed {len(documents)} page(s) from {file_path}")
     return documents
+#document has attributes metadata and page_content

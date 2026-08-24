@@ -19,3 +19,5 @@ def split_text(documents, chunk_size = 300, chunk_overlap = 20): #default values
     chunks = text_splitter.split_documents(documents)
     print(f"Successfully split {len(documents)} page(s) into {len(chunks)} chunk(s)")
     return chunks
+#chunks is a list, chunk[x].page_content, chunk[x].metadata
+#chunk at any number k, such that k > 0 but k is <= #of total chunks

@@ -57,9 +57,9 @@ if __name__ == "__main__":
                 
                 for chunk in chain.stream(question): #live streaming for local running, no http
                     if hasattr(chunk, "content"):
-                        print(chunk.content, end="", flush=True)
+                        print(chunk.content, end="", flush=True) #push out piece by piece
                     else:
-                        print(str(chunk), end="", flush=True)
+                        print(str(chunk), end="", flush=True) #push out whole chunk as raw string
                         
                 print("\n" + "-"*50) #text separator
                 
@@ -68,3 +68,7 @@ if __name__ == "__main__":
                 break
             except Exception as e: #catch unexpected runtime errors
                 print(f"\nError: {e}\n" + "-"*50)
+           
+#streaming not supported on powershell
+#powershell command test                
+#Invoke-RestMethod -Uri "http://127.0.0.1:8000/query" -Method Post -ContentType "application/json" -Body '{"question": "Tell me about dogs"
